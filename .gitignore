@@ -1,0 +1,5 @@
+config.json
+link-atual.txt
+.claude/
+bin/
+node_modules/
