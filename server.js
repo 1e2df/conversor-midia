@@ -1,4 +1,4 @@
-// Conversor de links -> MP3 / MP4 (uso pessoal, roda localmente)
+﻿// Conversor de links -> MP3 / MP4 (uso pessoal, roda localmente)
 // Requer: Node 18+, yt-dlp e ffmpeg (winget install yt-dlp.yt-dlp)
 const http = require('http');
 const fs = require('fs');
@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 const TMP = path.join(os.tmpdir(), 'conversor-midia');
 fs.mkdirSync(TMP, { recursive: true });
 
-// ---------- localizar binários ----------
+// ---------- localizar binÃ¡rios ----------
 function findBin(name) {
   const exe = process.platform === 'win32' ? name + '.exe' : name;
   const candidates = [
@@ -21,7 +21,7 @@ function findBin(name) {
     process.env.ProgramFiles && path.join(process.env.ProgramFiles, 'cloudflared', exe),
   ].filter(Boolean);
   for (const c of candidates) if (fs.existsSync(c)) return c;
-  // instalações do winget ficam em ...\WinGet\Packages\<pacote>\[subpasta\bin\]<exe>
+  // instalaÃ§Ãµes do winget ficam em ...\WinGet\Packages\<pacote>\[subpasta\bin\]<exe>
   const pkgs = process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WinGet', 'Packages');
   if (pkgs && fs.existsSync(pkgs)) {
     const walk = (dir, depth) => {
@@ -48,10 +48,10 @@ const extraPath = [FFMPEG, DENO].filter(Boolean).map((p) => path.dirname(p));
 if (extraPath.length) CHILD_ENV.PATH = extraPath.join(path.delimiter) + path.delimiter + (process.env.PATH || '');
 
 // ---------- acesso remoto ----------
-const PAGES_URL = process.env.PAGES_URL || 'https://hendryck11st.github.io/conversor-midia/';
+const PAGES_URL = process.env.PAGES_URL || 'https://1e2df.github.io/conversor-midia/';
 const ALLOWED_ORIGINS = [new URL(PAGES_URL).origin, 'localhost'];
 
-// senha gerada na 1ª execução e guardada em config.json (fora do git)
+// senha gerada na 1Âª execuÃ§Ã£o e guardada em config.json (fora do git)
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 let config = {};
 try { config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); } catch {}
@@ -61,7 +61,7 @@ if (!config.senha) {
 }
 const PASSWORD = process.env.SENHA || config.senha;
 
-// pedidos que chegam pelo túnel trazem o cabeçalho cf-connecting-ip; os locais não
+// pedidos que chegam pelo tÃºnel trazem o cabeÃ§alho cf-connecting-ip; os locais nÃ£o
 const isRemote = (req) => !!req.headers['cf-connecting-ip'];
 function authorized(req) {
   if (!isRemote(req)) return true;
@@ -86,7 +86,7 @@ function buildArgs(url, format, quality, dir) {
     args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', kbps + 'K', '--embed-metadata');
   } else {
     const res = ['2160', '1080', '720', '480', '360'].includes(quality) ? `res:${quality},` : '';
-    // prioriza H.264 + AAC para máxima compatibilidade do .mp4
+    // prioriza H.264 + AAC para mÃ¡xima compatibilidade do .mp4
     args.push('-f', 'bv*+ba/b', '-S', `${res}vcodec:h264,acodec:m4a`, '--merge-output-format', 'mp4', '--remux-video', 'mp4');
   }
   args.push(url);
@@ -108,7 +108,7 @@ function startJob(url, format, quality) {
       const [, pct, speed, eta] = line.split('|');
       const p = parseFloat(pct);
       if (!isNaN(p)) {
-        if (p < job.progress - 50) job.status = 'baixando áudio'; // 2º stream (vídeo + áudio separados)
+        if (p < job.progress - 50) job.status = 'baixando Ã¡udio'; // 2Âº stream (vÃ­deo + Ã¡udio separados)
         job.progress = Math.min(99, p);
       }
       job.speed = (speed || '').trim(); job.eta = (eta || '').trim();
@@ -133,7 +133,7 @@ function startJob(url, format, quality) {
       if (!job.title) job.title = path.parse(files[0]).name;
     } else {
       job.status = 'erro';
-      const msg = (stderr.match(/ERROR:.*$/m) || [stderr.trim().split('\n').pop() || `yt-dlp saiu com código ${code}`])[0];
+      const msg = (stderr.match(/ERROR:.*$/m) || [stderr.trim().split('\n').pop() || `yt-dlp saiu com cÃ³digo ${code}`])[0];
       job.error = friendlyError(msg);
     }
   });
@@ -142,9 +142,9 @@ function startJob(url, format, quality) {
 
 function friendlyError(msg) {
   if (/login|sign in|cookies|rate-limit|private/i.test(msg))
-    return 'Este conteúdo exige login ou é privado (comum no Instagram). Detalhe: ' + msg;
-  if (/Unsupported URL/i.test(msg)) return 'Link não suportado.';
-  if (/ffmpeg|ffprobe/i.test(msg)) return 'ffmpeg não encontrado. Instale com: winget install yt-dlp.FFmpeg';
+    return 'Este conteÃºdo exige login ou Ã© privado (comum no Instagram). Detalhe: ' + msg;
+  if (/Unsupported URL/i.test(msg)) return 'Link nÃ£o suportado.';
+  if (/ffmpeg|ffprobe/i.test(msg)) return 'ffmpeg nÃ£o encontrado. Instale com: winget install yt-dlp.FFmpeg';
   return msg.replace(/^ERROR:\s*/, '');
 }
 
@@ -192,30 +192,30 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ytdlp: !!YTDLP, ffmpeg: !!FFMPEG, needsAuth: isRemote(req), authorized: authorized(req) });
   }
 
-  // tudo abaixo (menos o download por id, que já é um link secreto) exige senha quando vem pela internet
+  // tudo abaixo (menos o download por id, que jÃ¡ Ã© um link secreto) exige senha quando vem pela internet
   if (u.pathname.startsWith('/api/') && !u.pathname.startsWith('/api/file/') && !authorized(req)) {
     return json(res, 401, { error: 'Senha incorreta.' });
   }
 
   if (req.method === 'POST' && u.pathname === '/api/convert') {
-    if (!YTDLP) return json(res, 500, { error: 'yt-dlp não encontrado. Instale com: winget install yt-dlp.yt-dlp' });
+    if (!YTDLP) return json(res, 500, { error: 'yt-dlp nÃ£o encontrado. Instale com: winget install yt-dlp.yt-dlp' });
     const { url, format, quality } = await readBody(req);
-    if (!isValidUrl(url)) return json(res, 400, { error: 'Cole um link válido (http/https).' });
-    if (!['mp3', 'mp4'].includes(format)) return json(res, 400, { error: 'Formato inválido.' });
+    if (!isValidUrl(url)) return json(res, 400, { error: 'Cole um link vÃ¡lido (http/https).' });
+    if (!['mp3', 'mp4'].includes(format)) return json(res, 400, { error: 'Formato invÃ¡lido.' });
     return json(res, 200, { id: startJob(url, format, String(quality || '')) });
   }
 
   let m;
   if (req.method === 'GET' && (m = u.pathname.match(/^\/api\/job\/([a-f0-9]{16})$/))) {
     const j = jobs.get(m[1]);
-    if (!j) return json(res, 404, { error: 'Tarefa não encontrada.' });
+    if (!j) return json(res, 404, { error: 'Tarefa nÃ£o encontrada.' });
     const { status, progress, speed, eta, title, error } = j;
     return json(res, 200, { status, progress: Math.round(progress), speed, eta, title, error });
   }
 
   if (req.method === 'GET' && (m = u.pathname.match(/^\/api\/file\/([a-f0-9]{16})$/))) {
     const j = jobs.get(m[1]);
-    if (!j || !j.file || !fs.existsSync(j.file)) return json(res, 404, { error: 'Arquivo não disponível.' });
+    if (!j || !j.file || !fs.existsSync(j.file)) return json(res, 404, { error: 'Arquivo nÃ£o disponÃ­vel.' });
     const name = path.basename(j.file);
     res.writeHead(200, {
       'Content-Type': j.format === 'mp3' ? 'audio/mpeg' : 'video/mp4',
@@ -225,24 +225,24 @@ const server = http.createServer(async (req, res) => {
     return fs.createReadStream(j.file).pipe(res);
   }
 
-  json(res, 404, { error: 'Não encontrado' });
+  json(res, 404, { error: 'NÃ£o encontrado' });
 });
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Conversor rodando em http://localhost:${PORT}`);
-  console.log(`yt-dlp: ${YTDLP || 'NÃO ENCONTRADO'}`);
-  console.log(`ffmpeg: ${FFMPEG || 'NÃO ENCONTRADO'}`);
+  console.log(`yt-dlp: ${YTDLP || 'NÃƒO ENCONTRADO'}`);
+  console.log(`ffmpeg: ${FFMPEG || 'NÃƒO ENCONTRADO'}`);
   if (process.env.TUNNEL !== '0') startTunnel();
 });
 
-// ---------- túnel Cloudflare (expõe o servidor para o site no GitHub Pages) ----------
+// ---------- tÃºnel Cloudflare (expÃµe o servidor para o site no GitHub Pages) ----------
 function startTunnel() {
   const bin = findBin('cloudflared');
   if (!bin) {
-    console.log('\ncloudflared não encontrado — só uso local. Instale com: winget install Cloudflare.cloudflared');
+    console.log('\ncloudflared nÃ£o encontrado â€” sÃ³ uso local. Instale com: winget install Cloudflare.cloudflared');
     return;
   }
-  console.log('\nAbrindo túnel Cloudflare...');
+  console.log('\nAbrindo tÃºnel Cloudflare...');
   const t = spawn(bin, ['tunnel', '--no-autoupdate', '--url', `http://localhost:${PORT}`], { windowsHide: true });
   let shown = false;
   const scan = (d) => {
@@ -261,7 +261,7 @@ function startTunnel() {
   };
   t.stdout.on('data', scan);
   t.stderr.on('data', scan);
-  t.on('close', (c) => console.log(`Túnel encerrado (código ${c}).`));
+  t.on('close', (c) => console.log(`TÃºnel encerrado (cÃ³digo ${c}).`));
   process.on('exit', () => t.kill());
   process.on('SIGINT', () => process.exit());
 }
